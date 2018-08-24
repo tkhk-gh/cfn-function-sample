@@ -1,0 +1,39 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description:
+  IP restriction WAF
+
+Resources:
+  WAFIPSet:
+    Type: "AWS::WAF::IPSet"
+    Properties:
+      Name: "sample IPSet"
+      IPSetDescriptors:
+        - Type: IPV4
+          Value: 127.0.0.1/32  # sample
+
+  WAFRule:
+    Type: "AWS::WAF::Rule"
+    DependsOn: WAFIPSet
+    Properties:
+      MetricName: SampleRule
+      Name: SampleRule
+      Predicates:
+        - DataId: !Ref WAFIPSet
+          Negated: false
+          Type: IPMatch
+
+  WebACL:
+    Type: "AWS::WAF::WebACL"
+    DependsOn: WAFRule
+    Properties:
+      Name: "sample webACL"
+      DefaultAction:
+        Type: BLOCK
+      MetricName: SampleACL
+      Rules:
+        - Action:
+            Type: ALLOW
+          Priority: 1
+          RuleId: !Ref WAFRule
